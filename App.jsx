@@ -135,7 +135,23 @@ export default function App() {
             <li key={r.id}>
               <span className="sem">Sem {r.sem}</span>
               <div><div className="t">{r.title}</div><div className="m">{r.subject}{r.code ? ` · ${r.code}` : ''}{r.year ? ` · ${r.year}` : ''}</div></div>
-              <a className="dl" href={url(r.file_path)} target="_blank" rel="noopener noreferrer">Download</a>
+<div className="material-actions">
+  <a
+    className="dl"
+    href={url(r.file_path)}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    View
+  </a>
+  <a
+    className="dl"
+    href={`${url(r.file_path)}?download`}
+  >
+    Download
+  </a>
+</div>
+
               {admin && <div className="adm"><button className="del" onClick={() => remove(r)}>Delete</button></div>}
             </li>
           ))}
