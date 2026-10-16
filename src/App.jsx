@@ -50,6 +50,8 @@ export default function App() {
   }, [q])
 
   const url = (p) => supabase.storage.from('files').getPublicUrl(p).data.publicUrl
+  const downloadUrl = (p) =>
+    supabase.storage.from('files').getPublicUrl(p, { download: true }).data.publicUrl
 
   const sendLink = async (e) => {
     e.preventDefault()
@@ -64,14 +66,20 @@ export default function App() {
     const up = await supabase.storage.from('files').upload(path, file)
     if (up.error) return note(up.error.message)
     const { error } = await supabase.from('materials').insert({ ...form, year: form.type === 'pyq' ? +form.year : null, file_path: path })
-    if (error) return note(error.message)
+    if (error) {
+      await supabase.storage.from('files').remove([path])
+      return note(error.message)
+    }
     setForm(null); setFile(null); setType(form.type); load(); note('Added to the vault')
   }
 
   const remove = async (r) => {
     if (!window.confirm(`Delete "${r.title}"?`)) return
-    await supabase.storage.from('files').remove([r.file_path])
-    await supabase.from('materials').delete().eq('id', r.id)
+    const { error: dbError } = await supabase.from('materials').delete().eq('id', r.id)
+    if (dbError) return note(dbError.message)
+    const { error: fileError } = await supabase.storage.from('files').remove([r.file_path])
+    if (fileError) note(`Material deleted, but file cleanup failed: ${fileError.message}`)
+    else note('Material deleted')
     load()
   }
 
@@ -134,8 +142,23 @@ export default function App() {
           {list.map((r) => (
             <li key={r.id}>
               <span className="sem">Sem {r.sem}</span>
-              <div><div className="t">{r.title}</div><div className="m">{r.subject}{r.code ? ` · ${r.code}` : ''}{r.year ? ` · ${r.year}` : ''}</div></div>
-              <a className="dl" href={url(r.file_path)} target="_blank" rel="noopener noreferrer">Download</a>
+              <div><div className="t">{r.title}</div><div className="m">{r.subject}{r.code ? ` · ${r.code}` : ''}{r.year ? ` · ${r.year}` : ''}</div></div>   
+<div className="material-actions">
+  <a
+    className="dl"
+    href={url(r.file_path)}
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    View
+  </a>
+  <a
+    className="dl"
+    href={downloadUrl(r.file_path)}
+  >
+    Download
+  </a>
+</div>
               {admin && <div className="adm"><button className="del" onClick={() => remove(r)}>Delete</button></div>}
             </li>
           ))}
