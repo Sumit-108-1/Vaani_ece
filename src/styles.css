@@ -79,3 +79,20 @@ a.dl{display:block;text-align:center;text-decoration:none}
 .modal h2{font:800 24px var(--font);margin:0 0 6px}
 .modal .btn{background:var(--soft)}.modal .btn.primary{background:var(--cyan)}
 header .btn{background:var(--soft)}header .btn.primary{background:var(--cyan)}
+.material-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.material-actions .dl {
+  flex: 1;
+  display: inline-block;
+  margin-top: 0;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
